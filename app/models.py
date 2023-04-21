@@ -21,7 +21,7 @@ class User(UserMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     fullname: Mapped[Optional[str]]
     email: Mapped[Optional[str]] = mapped_column(String(100))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    #created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     sales: Mapped[List["Sale"]] = relationship(back_populates="user")
 
     # initializes 
@@ -44,7 +44,7 @@ class Client(Base):
     adress: Mapped[str] = mapped_column(String(100))
     email: Mapped[Optional[str]] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(String(128))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    #created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     sales: Mapped[List["Sale"]] = relationship(back_populates="client")
 
@@ -80,7 +80,7 @@ class Sale(Base):
     __tablename__ = 'sale'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    #timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     client_id: Mapped[int] = mapped_column(ForeignKey("client.id"))
