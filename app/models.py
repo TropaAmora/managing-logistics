@@ -13,14 +13,17 @@ class User(UserMixin, Base):
     __tablename__ = 'user'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(120))
+    username: Mapped[str] = mapped_column(String(100))
     password_hash: Mapped[str] = mapped_column(String(128))
     fullname: Mapped[Optional[str]]
+    email: Mapped[Optional[str]] = mapped_column(String(100))
 
     # initializes 
-    def __init__(self, id, username, password_hash, fullname):
+    def __init__(self, username, password_hash, fullname="", email=''):
         self.username = username
         self.password_hash = password_hash
+        self.fullname = fullname
+        self.email = email
 
     def __repr__(self) -> str:
         return f'<User {self.username}>'

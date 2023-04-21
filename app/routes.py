@@ -28,7 +28,7 @@ def login():
         # query the database for the username of the form value
         user = session.query(User).filter(User.username == form.username.data).first()
         if user is None or not check_password_hash(user.password_hash, form.password.data):
-            flash('Username or password are uncorrect.')
+            flash('Username or password are incorrect.')
             return redirect(url_for('login'))
 
         login_user(user, remember=form.remember_me.data)
@@ -50,9 +50,17 @@ def logout():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
     form = RegistrationForm()
-    if request.method == 'POST':
+    if form.validate_on_submit():
         # do stuff
-        
+        pwd = generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password_hash=pwd, email=form.email.data)
+        session.add(new_user)
+        session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('index'))
     else:
-        return render_template('register', form=form)
+        return render_template('register.html', form=form)
