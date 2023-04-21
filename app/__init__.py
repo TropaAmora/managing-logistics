@@ -1,8 +1,8 @@
 """ This file initializes all the instances needed to run the applications """
 
 from typing import Optional, List
-from sqlalchemy import create_engine, delete
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session

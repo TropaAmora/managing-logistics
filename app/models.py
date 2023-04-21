@@ -31,3 +31,4 @@ class User(UserMixin, Base):
 engine = create_engine("sqlite:///app.db", echo=True)
 
 Base.metadata.create_all(bind=engine)
+
