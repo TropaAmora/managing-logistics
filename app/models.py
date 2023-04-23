@@ -2,7 +2,7 @@
 
 import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, Float, ForeignKey, create_engine, DateTime
+from sqlalchemy import String, Integer, Float, ForeignKey, create_engine, DateTime, TIMESTAMP
 from sqlalchemy import func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship, sessionmaker
 
@@ -10,7 +10,9 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class Base(DeclarativeBase):
-    pass
+    type_annotation_map = {
+    datetime.datetime: TIMESTAMP(timezone=True),
+    }
 
 class User(UserMixin, Base):
     """ User class """
@@ -22,6 +24,7 @@ class User(UserMixin, Base):
     fullname: Mapped[Optional[str]]
     email: Mapped[Optional[str]] = mapped_column(String(100))
     #created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    
     sales: Mapped[List["Sale"]] = relationship(back_populates="user")
 
     # initializes 
@@ -60,7 +63,7 @@ class Client(Base):
 class Product(Base):
     """ Product class """
     __tablename__ = 'product'
-    refference: Mapped[int] = mapped_column(primary_key=True)
+    ref: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
     # add a ptype_id to connect with the ptype table
     stock: Mapped[int] = mapped_column(Integer)
@@ -103,7 +106,7 @@ class SaleBatch(Base):
     quantity: Mapped[int] = mapped_column(Integer)
     saleprice: Mapped[float] = mapped_column(Float)
     sale_id: Mapped[int] = mapped_column(ForeignKey("sale.id"))
-    product_ref: Mapped[int] = mapped_column(ForeignKey("product.refference"))
+    product_ref: Mapped[int] = mapped_column(ForeignKey("product.ref"))
 
     def __init__(self, quantity, saleprice, sale_id, product_id):
         self.quantity = quantity
