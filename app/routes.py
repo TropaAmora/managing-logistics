@@ -7,8 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
 
 from app import app, session
-from app.models import User
-from app.forms import LoginForm, RegistrationForm
+from app.models import User, Client
+from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm
 
 @app.route("/")
 @login_required
@@ -64,3 +64,19 @@ def register():
         return redirect(url_for('index'))
     else:
         return render_template('register.html', form=form)
+    
+
+@app.route("/registerclient", methods=['GET', 'POST'])
+@login_required
+def registerclient():
+    form = ClientRegistrationForm()
+    if request.method == 'POST':
+        # Register the client
+        id_user = int(current_user.get_id())
+        new_client = Client(form.name.data, form.address.data, form.email.data, form.description.data, id_user)
+        session.add(new_client)
+        session.commit()
+        flash('Congratulations, you created a new client!')
+        return redirect(url_for('index'))
+    else:
+        return render_template('registerclient.html', form=form)

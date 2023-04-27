@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
 
-from app.models import User
+from app.models import User, Client
 from app import session
 
 class LoginForm(FlaskForm):
@@ -27,3 +27,18 @@ class RegistrationForm(FlaskForm):
         user = session.query(User).filter(User.email == email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+        
+    
+class ClientRegistrationForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    address = StringField('Address', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    description = StringField('Description', validators=[DataRequired()])
+    submit = SubmitField('Create Client')
+
+    def validate_client(self, email):
+        user = session.query(Client).filter(Client.email == email.data).first()
+        if user is not None:
+            raise ValidationError('This email is already registered on another existing client')
+        
+
