@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 
-from app.models import User, Client
+from app.models import User, Client, Product
 from app import session
 
 class LoginForm(FlaskForm):
@@ -30,8 +30,8 @@ class RegistrationForm(FlaskForm):
         
     
 class ClientRegistrationForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    address = StringField('Address', validators=[DataRequired()])
+    name = StringField('Name', validators=[DataRequired(), Length(1, 40)])
+    address = StringField('Address', validators=[DataRequired(), Length(10, 40)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     description = StringField('Description', validators=[DataRequired()])
     submit = SubmitField('Create Client')
@@ -42,3 +42,17 @@ class ClientRegistrationForm(FlaskForm):
             raise ValidationError('This email is already registered on another existing client')
         
 
+class ProductRegistrationForm(FlaskForm):
+    ref = IntegerField('Refference', validators=[DataRequired(), Length(10, 20)])
+    name = StringField('Name', validators=[DataRequired(), Length(1, 40)])
+    stock = IntegerField('Initial stock', validators=[DataRequired()])
+    submit = SubmitField('Add product')
+
+    def validate_ref(self, ref):
+        product = session.query(Product).filer(Product.ref == ref).first()
+        if product is not None:
+            raise ValidationError('The refference is already registered.')
+        
+
+class SaleRegistrationForm(FlaskForm):
+    pass

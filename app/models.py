@@ -76,8 +76,8 @@ class Product(Base):
 
     salebatches: Mapped[List["SaleBatch"]] = relationship(backref="product")    
 
-    def __init__(self, refference, name, stock):
-        self.refference = refference
+    def __init__(self, ref, name, stock):
+        self.ref = ref
         self.name = name
         self.stock = stock
     

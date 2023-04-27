@@ -1,0 +1,41 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Product registration.
+{% endblock %} 
+
+{% block main %} 
+    <h1>Register client.</h1>
+    <form action="" method="post" autocomplete="off" autofocus>
+        <div class="mb-3">
+            {{ form.ref.label }}<br>
+            {{ form.ref(size=32)}}
+        </div>
+        <div>
+            {% for error in form.ref.errors %} 
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.name.label }}<br>
+            {{ form.name(size=32)}}
+        </div>
+        <div>
+            {% for error in form.name.errors %} 
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.stock.label }}<br>
+            {{ form.stock(size=32)}}
+        </div>
+        <div>
+            {% for error in form.stock.errors %} 
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.submit() }}
+        </div>
+    </form>
+{% endblock %}
