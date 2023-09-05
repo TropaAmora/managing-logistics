@@ -7,8 +7,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
 
 from app import app, session
-from app.models import User, Client, Product
-from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm, ProductRegistrationForm
+from app.models import User, Client, Product, Sale, SaleBatch
+from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm, ProductRegistrationForm, SaleRegistrationForm, SaleBatchRegistrationForm
+from app.helpers import get_list_id, get_list_ref
 
 @app.route("/")
 @login_required
@@ -41,7 +42,6 @@ def login():
     else:
         return render_template('login.html', form=form)
         
-    
 @app.route("/logout")
 @login_required
 def logout():
@@ -65,7 +65,6 @@ def register():
     else:
         return render_template('register.html', form=form)
     
-
 @app.route("/registerclient", methods=['GET', 'POST'])
 @login_required
 def registerclient():
@@ -85,13 +84,63 @@ def registerclient():
 @login_required
 def registerproduct():
     form = ProductRegistrationForm()
-
+    id_user = int(current_user.get_id())
     if request.method == 'POST':
         # do stuff
-        new_product = Product(form.ref.data, form.name.data, form.stock.data)
+        new_product = Product(ref=form.ref.data, 
+                              name=form.name.data, stock=form.stock.data, user_id=id_user)
         session.add(new_product)
         session.commit()
         flash('Congratulations, you created a new product.')
         return redirect(url_for('index'))
     else:
         return render_template('registerproduct.html', form=form)
+    
+@app.route("/registersale", methods=['GET', 'POST'])
+@login_required
+def registersale():
+    id_user = int(current_user.get_id())
+    clients_list = get_list_id(Client, id_user)
+    form = SaleRegistrationForm()
+    form.client.choices = clients_list
+
+    # i have to better understand the different atributes a form will have
+    
+    #product_list = get_list_ref(Product, id_user)
+    #form.sale_batches.product_ref.choices = product_list
+
+    #if request.method == 'POST':
+        #new_sale = Sale(user_id=id_user, 
+        #                client_id=form.client.data
+        #                )
+        #session.add(new_sale)
+        #session.commit()
+        #id_sale = session.query(Sale).filter(Sale.user_id == id_user).order_by(Sale.id.desc()).first()
+        #for data in form.sale_batches.data:
+        #    new_salebatch = SaleBatch(product_ref=data["product_ref"],
+        #                                quantity=data["quantity"], 
+        #                                saleprice=data["saleprice"], 
+        #                                sale_id=id_sale, 
+        #                                )
+        #    session.add(new_salebatch)
+        #    session.commit()
+        #flash('Congratulations, you registered a sale.')
+        #return redirect(url_for('registersale')) 
+        #else:
+    return render_template('registersale.html', form=form)
+        
+@app.route("/clients", methods=['GET', 'POST'])
+def clients():
+    if request.method == 'GET':
+        id_user = int(current_user.get_id())
+        clients = session.query(Client).filter(Client.user_id == id_user).all()
+        return render_template('clients.html', clients=clients)
+    else:
+        return redirect(url_for('index'))
+    
+@app.route("/products", methods=['GET', 'POST'])
+def products():
+    if request.method == 'GET':
+        id_user = int(current_user.get_id())
+        products = session.query(Product).filter(Product.user_id == id_user).all()
+        return render_template('products.html', products=products)

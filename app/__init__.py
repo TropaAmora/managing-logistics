@@ -11,6 +11,8 @@ from flask_login import LoginManager
 from app.models import User
 from config import Config
 
+import calendar
+
 # Creation of the app instance and apply the config class
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -30,13 +32,16 @@ engine = create_engine(connection_link, echo=True)
 Session_db = sessionmaker(bind=engine)
 session = Session_db()
 
+
 # user_loader function, dont know where to put it
 @login_manager.user_loader
 def load_user(id):
     return session.query(User).filter(User.id == int(id)).first()
 
+def dow_name(dow):
+    return calendar.day_name[dow]
 
-
+app.jinja_env.filters['dow'] = dow_name
 #u1 = User(username='Anna')
 #u1.set_password('123')
 #session.add(u1)

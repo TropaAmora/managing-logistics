@@ -27,6 +27,7 @@ class User(UserMixin, Base):
     
     sales: Mapped[List["Sale"]] = relationship(backref="user")
     clients: Mapped[List["Client"]] = relationship(backref="user")
+    products: Mapped[List["Product"]] = relationship(backref="user")
 
     # initializes 
     def __init__(self, username, password_hash, fullname="", email=''):
@@ -74,12 +75,15 @@ class Product(Base):
     # add a ptype_id to connect with the ptype table
     stock: Mapped[int] = mapped_column(Integer)
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
     salebatches: Mapped[List["SaleBatch"]] = relationship(backref="product")    
 
-    def __init__(self, ref, name, stock):
+    def __init__(self, ref, name, stock, user_id):
         self.ref = ref
         self.name = name
         self.stock = stock
+        self.user_id = user_id
     
     def __repr__(self) -> str:
         return f'<Product {self.name} ({self.refference})>'
@@ -114,11 +118,11 @@ class SaleBatch(Base):
     sale_id: Mapped[int] = mapped_column(ForeignKey("sale.id"))
     product_ref: Mapped[int] = mapped_column(ForeignKey("product.ref"))
 
-    def __init__(self, quantity, saleprice, sale_id, product_id):
+    def __init__(self, quantity, saleprice, sale_id, product_ref):
         self.quantity = quantity
         self.saleprice = saleprice
         self.sale_id = sale_id
-        self.product_id = product_id
+        self.product_ref = product_ref
 
     def __repr__(self):
         return f'Sale batch {self.id}'

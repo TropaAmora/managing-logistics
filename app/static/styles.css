@@ -40,7 +40,7 @@ nav .navbar-brand .green
   }
 
   table {
-    border: 1px solid black;
+    border: 1px solid white;
     table-layout: fixed;
     width: 200px;
   }
@@ -50,4 +50,30 @@ nav .navbar-brand .green
     border: 1px solid black;
     width: 100px;
     overflow: hidden;
+  }
+
+  body {
+    background-color: #00ffaa;
+    font-family: Verdana;
+    text-align: center;
+  }
+  
+  .questionName {
+    margin-top: 15px;
+    font-size: 20px;
+  }
+  
+  .optionName {
+    margin-top: 8px;
+    font-size: 15px;
+    font-style: italic;
+    margin-left: 605px;
+  }
+  
+  .box {
+    margin-top: 12px;
+  }
+  
+  .option {
+    display: flex;
   }

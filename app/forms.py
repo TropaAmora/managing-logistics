@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, SelectField, FormField, FieldList, DecimalField, Form
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length, InputRequired
 
-from app.models import User, Client, Product
+from app.models import User, Client, Product, SaleBatch
 from app import session
 
 class LoginForm(FlaskForm):
@@ -49,10 +49,34 @@ class ProductRegistrationForm(FlaskForm):
     submit = SubmitField('Add product')
 
     def validate_ref(self, ref):
-        product = session.query(Product).filer(Product.ref == ref).first()
+        product = session.query(Product).filter(Product.ref == ref).first()
         if product is not None:
             raise ValidationError('The refference is already registered.')
         
+    def validate_stock(self, stock):
+        if stock < 1:
+            raise ValidationError('Please insert a valid quantity')
+        
+
+
+class SaleBatchRegistrationForm(Form):
+    #product_ref = SelectField('Product name', coerce=int, validators=[InputRequired()])
+    product_ref = IntegerField('Product ref', validators=[InputRequired()])
+    quantity = IntegerField('Quantity', validators=[InputRequired()])
+    saleprice = DecimalField('Price', validators=[InputRequired()])
+
+    # if done with SelectField remove this validation step
+    def validate_ref(self, ref):
+        product = session.query(Product).filter(Product.ref == ref).first()
+        if product is None:
+            raise ValidationError('The product ref does not exist.')
+        
+    def validate_quantity(self, quantity):
+        if quantity < 1:
+            raise ValidationError('The quantity should be an integer greater or equal to one.')
 
 class SaleRegistrationForm(FlaskForm):
-    pass
+    client = SelectField('Client name', coerce=int, validators=[InputRequired()])
+    sale_batches = FieldList(FormField(SaleBatchRegistrationForm), min_entries=1, max_entries=5)
+
+    # probably better to add a validate function for the number of sale_batches

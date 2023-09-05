@@ -1,0 +1,30 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Clients.
+{% endblock %} 
+
+{% block main %} 
+    <h1>List of products</h1>
+    <div class="section">
+        <h2>All products.</h2>
+        <table class="center">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Adress</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %} 
+                    <tr>
+                        <td>{{ client.name }}</td>
+                        <td>{{ client.address }}</td>
+                        <td>{{ client.email }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

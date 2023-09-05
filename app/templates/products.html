@@ -1,0 +1,30 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Clients.
+{% endblock %} 
+
+{% block main %} 
+    <h1>List of Clients</h1>
+    <div class="section">
+        <h2>All clients.</h2>
+        <table class="center">
+            <thead>
+                <tr>
+                    <th>Refference</th>
+                    <th>Name</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %} 
+                    <tr>
+                        <td>{{ product.ref }}</td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.stock }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
