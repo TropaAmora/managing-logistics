@@ -52,4 +52,7 @@ app.jinja_env.filters['dow'] = dow_name
 #for r in people:
 #    print(r)
 
+# Global variable that counts the amount of salebatches
+N = 1
+
 from app import routes, models

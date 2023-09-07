@@ -78,5 +78,6 @@ class SaleBatchRegistrationForm(Form):
 class SaleRegistrationForm(FlaskForm):
     client = SelectField('Client name', coerce=int, validators=[InputRequired()])
     sale_batches = FieldList(FormField(SaleBatchRegistrationForm), min_entries=1, max_entries=5)
+    submit = SubmitField('Register sale.')
 
     # probably better to add a validate function for the number of sale_batches

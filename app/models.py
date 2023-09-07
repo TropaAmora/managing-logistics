@@ -115,6 +115,7 @@ class SaleBatch(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     quantity: Mapped[int] = mapped_column(Integer)
     saleprice: Mapped[float] = mapped_column(Float)
+    
     sale_id: Mapped[int] = mapped_column(ForeignKey("sale.id"))
     product_ref: Mapped[int] = mapped_column(ForeignKey("product.ref"))
 
@@ -125,7 +126,7 @@ class SaleBatch(Base):
         self.product_ref = product_ref
 
     def __repr__(self):
-        return f'Sale batch {self.id}'
+        return f'<Sale batch {self.id}>'
 
 
 # Engine creation first and the creation of all the tabels that result from this models

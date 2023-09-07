@@ -18,13 +18,17 @@
                     <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </div>
-            <div class="mb-3">
-                {% for entry in form.sale_batches %}
-                    {{ entry.product_ref.label }}{{ entry.product_ref }}<br>
-                    {{ entry.quantity.label }}{{ entry.quantity }}<br>
-                    {{ entry.saleprice.label }}{{ entry.saleprice }}<br>
-                {% endfor %}
-            </div>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('addsalebatch') }}">Add product</a></li>
+            {% for i in range(N) %}
+                <div class="mb-3">
+                    {% for entry in form.sale_batches %}
+                        {{ entry.product_ref.label }}{{ entry.product_ref }}<br>
+                        {{ entry.quantity.label }}{{ entry.quantity }}<br>
+                        {{ entry.saleprice.label }}{{ entry.saleprice }}<br>
+                    {% endfor %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('removesalebatch') }}">Remove product</a></li>
+                </div>
+            {% endfor %}
             <button>Submit</button>
         </form>
     </table>

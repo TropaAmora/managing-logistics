@@ -6,7 +6,7 @@ from is_safe_url import is_safe_url
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
 
-from app import app, session
+from app import app, session, N
 from app.models import User, Client, Product, Sale, SaleBatch
 from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm, ProductRegistrationForm, SaleRegistrationForm, SaleBatchRegistrationForm
 from app.helpers import get_list_id, get_list_ref
@@ -55,9 +55,11 @@ def register():
     
     form = RegistrationForm()
     if form.validate_on_submit():
-        # do stuff
+        # if the form is validated is similar to the request method being post
         pwd = generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password_hash=pwd, email=form.email.data)
+        new_user = User(username=form.username.data, 
+                        password_hash=pwd, 
+                        email=form.email.data)
         session.add(new_user)
         session.commit()
         flash('Congratulations, you are now a registered user!')
@@ -72,7 +74,11 @@ def registerclient():
     if request.method == 'POST':
         # Register the client
         id_user = int(current_user.get_id())
-        new_client = Client(form.name.data, form.address.data, form.email.data, form.description.data, id_user)
+        new_client = Client(form.name.data, 
+                            form.address.data, 
+                            form.email.data, 
+                            form.description.data, 
+                            id_user)
         session.add(new_client)
         session.commit()
         flash('Congratulations, you created a new client!')
@@ -88,46 +94,75 @@ def registerproduct():
     if request.method == 'POST':
         # do stuff
         new_product = Product(ref=form.ref.data, 
-                              name=form.name.data, stock=form.stock.data, user_id=id_user)
+                              name=form.name.data, 
+                              stock=form.stock.data, 
+                              user_id=id_user)
         session.add(new_product)
         session.commit()
         flash('Congratulations, you created a new product.')
         return redirect(url_for('index'))
     else:
         return render_template('registerproduct.html', form=form)
+
     
 @app.route("/registersale", methods=['GET', 'POST'])
 @login_required
 def registersale():
+    global N # means: in this scope, use the global name
     id_user = int(current_user.get_id())
     clients_list = get_list_id(Client, id_user)
     form = SaleRegistrationForm()
     form.client.choices = clients_list
-
-    # i have to better understand the different atributes a form will have
-    
-    #product_list = get_list_ref(Product, id_user)
-    #form.sale_batches.product_ref.choices = product_list
-
-    #if request.method == 'POST':
-        #new_sale = Sale(user_id=id_user, 
-        #                client_id=form.client.data
-        #                )
-        #session.add(new_sale)
-        #session.commit()
-        #id_sale = session.query(Sale).filter(Sale.user_id == id_user).order_by(Sale.id.desc()).first()
-        #for data in form.sale_batches.data:
-        #    new_salebatch = SaleBatch(product_ref=data["product_ref"],
-        #                                quantity=data["quantity"], 
-        #                                saleprice=data["saleprice"], 
-        #                                sale_id=id_sale, 
-        #                                )
-        #    session.add(new_salebatch)
-        #    session.commit()
-        #flash('Congratulations, you registered a sale.')
-        #return redirect(url_for('registersale')) 
-        #else:
-    return render_template('registersale.html', form=form)
+    if request.method == 'POST':
+        # register sale here
+        new_sale = Sale(user_id=id_user, 
+                        client_id=form.client.data
+                        )
+        print(new_sale)
+        session.add(new_sale)
+        session.commit()
+        id_sale = session.query(Sale.id).filter(Sale.user_id == id_user).order_by(Sale.id.desc()).first()
+        # using temporary lists to store the values for each sale batch
+        sb = {
+            'sale_batches-0-product_ref':[], 
+            'sale_batches-0-quantity':[], 
+            'sale_batches-0-saleprice':[]
+            }
+        for keys in request.form.keys():
+            print(keys)
+            i = 0
+            if keys == 'sale_batches-0-product_ref':
+                for value in request.form.getlist(keys):
+                    print(value)
+                    sb['sale_batches-0-product_ref'].append(value)
+                    i += 1
+            i = 0
+            if keys == 'sale_batches-0-quantity':
+                for value in request.form.getlist(keys):
+                    print(value)
+                    sb['sale_batches-0-quantity'].append(value)
+                    i += 1
+            i = 0
+            if keys == 'sale_batches-0-saleprice':
+                for value in request.form.getlist(keys):
+                    print(value)
+                    sb['sale_batches-0-saleprice'].append(value)
+                    i += 1
+        print(sb)
+        for index in range(N):
+            new_salebatch = SaleBatch(product_ref=int(sb['sale_batches-0-product_ref'][index]),
+                                      quantity=int(sb['sale_batches-0-quantity'][index]), 
+                                      saleprice=float(sb['sale_batches-0-saleprice'][index]), 
+                                      sale_id=(id_sale[0]), 
+                                      )
+            print(new_salebatch)
+            session.add(new_salebatch)
+            session.commit()
+        flash('Congratulations, you registered a sale.')
+        N = 1
+        return redirect(url_for('index'))
+    else:
+        return render_template('registersale.html', form=form, N=N)
         
 @app.route("/clients", methods=['GET', 'POST'])
 def clients():
@@ -144,3 +179,20 @@ def products():
         id_user = int(current_user.get_id())
         products = session.query(Product).filter(Product.user_id == id_user).all()
         return render_template('products.html', products=products)
+    else:
+        return redirect(url_for('index'))
+    
+@app.route("/addsalebatch", methods=['GET', 'POST'])
+@login_required
+def addsalebatch():
+    global N
+    N += 1
+    return redirect(url_for('registersale'))
+
+@app.route("/removesalebatch", methods=['GET', 'POST'])
+@login_required
+def removesalebatch():
+    global N
+    if N > 1:
+        N -= 1
+    return redirect(url_for('registersale'))
