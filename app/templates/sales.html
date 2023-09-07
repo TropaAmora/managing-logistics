@@ -1,0 +1,28 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Sales.
+{% endblock %} 
+
+{% block main %} 
+    <h1>List of sales.</h1>
+    <div class="section">
+        <h2>All Sales.</h2>
+        <table class="center">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Client id</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %} 
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.client_id }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

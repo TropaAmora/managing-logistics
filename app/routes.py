@@ -182,6 +182,16 @@ def products():
     else:
         return redirect(url_for('index'))
     
+
+@app.route("/sales", methods=['GET', 'POST'])
+def sales():
+    if request.method == 'GET':
+        id_user = int(current_user.get_id())
+        sales = session.query(Sale).filter(Sale.user_id == id_user).all()
+        return render_template('sales.html', sales=sales)
+    else:
+        return redirect(url_for('index'))
+    
 @app.route("/addsalebatch", methods=['GET', 'POST'])
 @login_required
 def addsalebatch():
