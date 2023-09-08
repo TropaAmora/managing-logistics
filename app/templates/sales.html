@@ -11,16 +11,24 @@
         <table class="center">
             <thead>
                 <tr>
-                    <th>Id</th>
+                    <th>Sale id</th>
                     <th>Client id</th>
+                    <th>Product ref</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
                 </tr>
             </thead>
             <tbody>
-                {% for sale in sales %} 
-                    <tr>
-                        <td>{{ sale.id }}</td>
-                        <td>{{ sale.client_id }}</td>
-                    </tr>
+                {% for sale in sales %}
+                    {% for salebatch in sale.salebatches %} 
+                        <tr>
+                            <td>{{ sale.id }}</td>
+                            <td>{{ sale.client_id }}</td>
+                            <td>{{ salebatch.product_ref }}</td>
+                            <td>{{ salebatch.quantity }}</td>
+                            <td>{{ salebatch.saleprice }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
         </table>

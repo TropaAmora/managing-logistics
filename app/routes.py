@@ -187,7 +187,7 @@ def products():
 def sales():
     if request.method == 'GET':
         id_user = int(current_user.get_id())
-        sales = session.query(Sale).filter(Sale.user_id == id_user).all()
+        sales = session.query(Sale).join(SaleBatch, Sale.id == SaleBatch.sale_id).filter(Sale.user_id == id_user).all()
         return render_template('sales.html', sales=sales)
     else:
         return redirect(url_for('index'))
