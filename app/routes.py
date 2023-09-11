@@ -118,7 +118,6 @@ def registersale():
         new_sale = Sale(user_id=id_user, 
                         client_id=form.client.data
                         )
-        print(new_sale)
         session.add(new_sale)
         session.commit()
         id_sale = session.query(Sale.id).filter(Sale.user_id == id_user).order_by(Sale.id.desc()).first()
@@ -129,33 +128,29 @@ def registersale():
             'sale_batches-0-saleprice':[]
             }
         for keys in request.form.keys():
-            print(keys)
             i = 0
             if keys == 'sale_batches-0-product_ref':
                 for value in request.form.getlist(keys):
-                    print(value)
                     sb['sale_batches-0-product_ref'].append(value)
                     i += 1
             i = 0
             if keys == 'sale_batches-0-quantity':
                 for value in request.form.getlist(keys):
-                    print(value)
                     sb['sale_batches-0-quantity'].append(value)
                     i += 1
             i = 0
             if keys == 'sale_batches-0-saleprice':
                 for value in request.form.getlist(keys):
-                    print(value)
                     sb['sale_batches-0-saleprice'].append(value)
                     i += 1
-        print(sb)
         for index in range(N):
             new_salebatch = SaleBatch(product_ref=int(sb['sale_batches-0-product_ref'][index]),
                                       quantity=int(sb['sale_batches-0-quantity'][index]), 
                                       saleprice=float(sb['sale_batches-0-saleprice'][index]), 
                                       sale_id=(id_sale[0]), 
                                       )
-            print(new_salebatch)
+            product = session.query(Product).filter(Product.ref == new_salebatch.product_ref).first()
+            product.stock -= new_salebatch.quantity
             session.add(new_salebatch)
             session.commit()
         flash('Congratulations, you registered a sale.')

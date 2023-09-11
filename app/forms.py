@@ -66,14 +66,19 @@ class SaleBatchRegistrationForm(Form):
     saleprice = DecimalField('Price', validators=[InputRequired()])
 
     # if done with SelectField remove this validation step
+    # Test this validation errors
     def validate_ref(self, ref):
         product = session.query(Product).filter(Product.ref == ref).first()
         if product is None:
             raise ValidationError('The product ref does not exist.')
         
-    def validate_quantity(self, quantity):
+    def validate_quantity(self, quantity, ref):
+        stock = session.query(Product).filter(Product.ref == ref).first()
         if quantity < 1:
             raise ValidationError('The quantity should be an integer greater or equal to one.')
+        elif quantity > stock:
+            raise ValidationError('The quantity is greater than the available stock')
+
 
 class SaleRegistrationForm(FlaskForm):
     client = SelectField('Client name', coerce=int, validators=[InputRequired()])
