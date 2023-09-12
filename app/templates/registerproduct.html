@@ -26,15 +26,6 @@
             {% endfor %}
         </div>
         <div class="mb-3">
-            {{ form.stock.label }}<br>
-            {{ form.stock(size=32)}}
-        </div>
-        <div>
-            {% for error in form.stock.errors %} 
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </div>
-        <div class="mb-3">
             {{ form.submit() }}
         </div>
     </form>

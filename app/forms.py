@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, SelectField, FormField, FieldList, DecimalField, Form
 from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length, InputRequired
 
-from app.models import User, Client, Product, SaleBatch
+from app.models import User, Client, Product, SaleBatch, Supplier, Purchase, PurchaseBatch
 from app import session
 
 class LoginForm(FlaskForm):
@@ -39,13 +39,23 @@ class ClientRegistrationForm(FlaskForm):
     def validate_client(self, email):
         user = session.query(Client).filter(Client.email == email.data).first()
         if user is not None:
-            raise ValidationError('This email is already registered on another existing client')
-        
+            raise ValidationError('This email is already registered on another existing client.')
+
+class SupplierRegistrationForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(1, 40)])
+    address = StringField('Address', validators=[DataRequired(), Length(10, 40)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    description = StringField('Description', validators=[DataRequired()])
+    submit = SubmitField('Create Supplier')
+
+    def validate_supplier(self, email):
+        user = session.query(Supplier).filter(Supplier.email == email.data).first()
+        if user is not None:
+            raise ValidationError('This email is already registered on another existing supplier.')        
 
 class ProductRegistrationForm(FlaskForm):
     ref = IntegerField('Refference', validators=[DataRequired(), Length(10, 20)])
     name = StringField('Name', validators=[DataRequired(), Length(1, 40)])
-    stock = IntegerField('Initial stock', validators=[DataRequired()])
     submit = SubmitField('Add product')
 
     def validate_ref(self, ref):
@@ -57,7 +67,6 @@ class ProductRegistrationForm(FlaskForm):
         if stock < 1:
             raise ValidationError('Please insert a valid quantity')
         
-
 
 class SaleBatchRegistrationForm(Form):
     #product_ref = SelectField('Product name', coerce=int, validators=[InputRequired()])
@@ -86,3 +95,27 @@ class SaleRegistrationForm(FlaskForm):
     submit = SubmitField('Register sale.')
 
     # probably better to add a validate function for the number of sale_batches
+
+class PurchaseBatchRegistrationForm(Form):
+    #product_ref = SelectField('Product name', coerce=int, validators=[InputRequired()])
+    product_ref = IntegerField('Product ref', validators=[InputRequired()])
+    quantity = IntegerField('Quantity', validators=[InputRequired()])
+    purchaseprice = DecimalField('Price', validators=[InputRequired()])
+
+    # if done with SelectField remove this validation step
+    # Test this validation errors
+    def validate_ref(self, ref):
+        product = session.query(Product).filter(Product.ref == ref).first()
+        if product is None:
+            raise ValidationError('The product ref does not exist.')
+        
+    def validate_quantity(self, quantity, ref):
+        stock = session.query(Product).filter(Product.ref == ref).first()
+        if quantity < 1:
+            raise ValidationError('The quantity should be an integer greater or equal to one.')
+
+
+class PurchaseRegistrationForm(FlaskForm):
+    supplier = SelectField('Supplier name', coerce=int, validators=[InputRequired()])
+    purchase_batches = FieldList(FormField(PurchaseBatchRegistrationForm), min_entries=1, max_entries=5)
+    submit = SubmitField('Register sale.')

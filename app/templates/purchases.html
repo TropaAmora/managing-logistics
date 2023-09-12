@@ -1,0 +1,36 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Purchases.
+{% endblock %} 
+
+{% block main %} 
+    <h1>List of purchases.</h1>
+    <div class="section">
+        <h2>All Purchases.</h2>
+        <table class="center">
+            <thead>
+                <tr>
+                    <th>Purchase id</th>
+                    <th>Supplier id</th>
+                    <th>Product ref</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                    {% for purchasebatch in purchase.purchasebatches %} 
+                        <tr>
+                            <td>{{ purchase.id }}</td>
+                            <td>{{ purchase.client_id }}</td>
+                            <td>{{ purchasebatch.product_ref }}</td>
+                            <td>{{ purchasebatch.quantity }}</td>
+                            <td>{{ purchasebatch.saleprice }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

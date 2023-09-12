@@ -26,8 +26,11 @@
                     <ul class="navbar-nav me-auto mt-2">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('clients') }}">Clients</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('suppliers') }}">Suppliers</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('products') }}">Products</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('sales') }}">Sales</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('purchases') }}">Purchases</a></li>
+
                     </ul>
                     {% if current_user.is_anonymous %}
                         <ul class="navbar-nav ms-auto mt-2">
@@ -38,7 +41,9 @@
                         <ul class="navbar-nav ms-auto mt-2">
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('registerproduct') }}">Register a product</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('registerclient') }}">Register a client</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('registersupplier') }}">Register a supplier</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('registersale') }}">Register a sale</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('registerpurchase') }}">Add stock</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Log out</a></li>
                         </ul>
                     {% endif %}

@@ -6,9 +6,9 @@ from is_safe_url import is_safe_url
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
 
-from app import app, session, N
-from app.models import User, Client, Product, Sale, SaleBatch
-from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm, ProductRegistrationForm, SaleRegistrationForm, SaleBatchRegistrationForm
+from app import app, session, N, X
+from app.models import User, Client, Supplier, Product, Sale, SaleBatch, Purchase, PurchaseBatch
+from app.forms import LoginForm, RegistrationForm, ClientRegistrationForm, SupplierRegistrationForm, ProductRegistrationForm, SaleRegistrationForm, SaleBatchRegistrationForm, PurchaseRegistrationForm, PurchaseBatchRegistrationForm
 from app.helpers import get_list_id, get_list_ref
 
 @app.route("/")
@@ -86,6 +86,27 @@ def registerclient():
     else:
         return render_template('registerclient.html', form=form)
     
+
+@app.route("/registersupplier", methods=['GET', 'POST'])
+@login_required
+def registersupplier():
+    form = SupplierRegistrationForm()
+    if request.method == 'POST':
+        # Register the client
+        id_user = int(current_user.get_id())
+        new_supplier = Supplier(form.name.data, 
+                            form.address.data, 
+                            form.email.data, 
+                            form.description.data, 
+                            id_user)
+        session.add(new_supplier)
+        session.commit()
+        flash('Congratulations, you created a new supplier!')
+        return redirect(url_for('index'))
+    else:
+        return render_template('registersupplier.html', form=form)
+    
+    
 @app.route("/registerproduct", methods=['GET', 'POST'])
 @login_required
 def registerproduct():
@@ -95,7 +116,7 @@ def registerproduct():
         # do stuff
         new_product = Product(ref=form.ref.data, 
                               name=form.name.data, 
-                              stock=form.stock.data, 
+                              stock=0, 
                               user_id=id_user)
         session.add(new_product)
         session.commit()
@@ -103,6 +124,61 @@ def registerproduct():
         return redirect(url_for('index'))
     else:
         return render_template('registerproduct.html', form=form)
+
+
+@app.route("/registerpurchase", methods=['GET', 'POST'])
+@login_required
+def registerpurchase():
+    global X # means: in this scope, use the global name
+    id_user = int(current_user.get_id())
+    clients_list = get_list_id(Client, id_user)
+    form = PurchaseRegistrationForm()
+    form.supplier.choices = clients_list
+    if request.method == 'POST':
+        # register sale here
+        new_purchase = Purchase(user_id=id_user, 
+                        supplier_id=form.supplier.data
+                        )
+        session.add(new_purchase)
+        session.commit()
+        id_purchase = session.query(Purchase.id).filter(Purchase.user_id == id_user).order_by(Purchase.id.desc()).first()
+        # using temporary lists to store the values for each sale batch
+        sb = {
+            'purchase_batches-0-product_ref':[], 
+            'purchase_batches-0-quantity':[], 
+            'purchase_batches-0-purchaseprice':[]
+            }
+        for keys in request.form.keys():
+            i = 0
+            if keys == 'purchase_batches-0-product_ref':
+                for value in request.form.getlist(keys):
+                    sb['purchase_batches-0-product_ref'].append(value)
+                    i += 1
+            i = 0
+            if keys == 'purchase_batches-0-quantity':
+                for value in request.form.getlist(keys):
+                    sb['purchase_batches-0-quantity'].append(value)
+                    i += 1
+            i = 0
+            if keys == 'purchase_batches-0-purchaseprice':
+                for value in request.form.getlist(keys):
+                    sb['purchase_batches-0-purchaseprice'].append(value)
+                    i += 1
+        for index in range(X):
+            new_purchasebatch = PurchaseBatch(product_ref=int(sb['purchase_batches-0-product_ref'][index]),
+                                      quantity=int(sb['purchase_batches-0-quantity'][index]), 
+                                      purchaseprice=float(sb['purchase_batches-0-purchaseprice'][index]), 
+                                      purchase_id=(id_purchase[0]), 
+                                      )
+            product = session.query(Product).filter(Product.ref == new_purchasebatch.product_ref).first()
+            product.stock += new_purchasebatch.quantity
+            session.add(new_purchasebatch)
+            session.commit()
+        flash('Congratulations, you registered a purchase.')
+        X = 1
+        return redirect(url_for('index'))
+    else:
+        return render_template('registerpurchase.html', form=form, X=X)
 
     
 @app.route("/registersale", methods=['GET', 'POST'])
@@ -158,7 +234,8 @@ def registersale():
         return redirect(url_for('index'))
     else:
         return render_template('registersale.html', form=form, N=N)
-        
+
+
 @app.route("/clients", methods=['GET', 'POST'])
 def clients():
     if request.method == 'GET':
@@ -167,7 +244,18 @@ def clients():
         return render_template('clients.html', clients=clients)
     else:
         return redirect(url_for('index'))
+
+
+@app.route("/suppliers", methods=['GET', 'POST'])
+def suppliers():
+    if request.method == 'GET':
+        id_user = int(current_user.get_id())
+        suppliers = session.query(Supplier).filter(Supplier.user_id == id_user).all()
+        return render_template('suppliers.html', suppliers=suppliers)
+    else:
+        return redirect(url_for('index'))
     
+
 @app.route("/products", methods=['GET', 'POST'])
 def products():
     if request.method == 'GET':
@@ -187,6 +275,16 @@ def sales():
     else:
         return redirect(url_for('index'))
     
+
+@app.route("/purchases", methods=['GET', 'POST'])
+def purchases():
+    if request.method == 'GET':
+        id_user = int(current_user.get_id())
+        purchases = session.query(Purchase).join(PurchaseBatch, Purchase.id == PurchaseBatch.purchase_id).filter(Purchase.user_id == id_user).all()
+        return render_template('purchases.html', purchases=purchases)
+    else:
+        return redirect(url_for('index'))
+    
 @app.route("/addsalebatch", methods=['GET', 'POST'])
 @login_required
 def addsalebatch():
@@ -201,3 +299,18 @@ def removesalebatch():
     if N > 1:
         N -= 1
     return redirect(url_for('registersale'))
+
+@app.route("/addpurchasebatch", methods=['GET', 'POST'])
+@login_required
+def addpurchasebatch():
+    global X
+    X += 1
+    return redirect(url_for('registerpurchase'))
+
+@app.route("/removepurchasebatch", methods=['GET', 'POST'])
+@login_required
+def removepurchasebatch():
+    global X
+    if X > 1:
+        X -= 1
+    return redirect(url_for('registerpurchase'))

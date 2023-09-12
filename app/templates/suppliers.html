@@ -1,13 +1,13 @@
 {% extends "layout.html" %} 
 
 {% block title %} 
-    Clients.
+    Suppliers.
 {% endblock %} 
 
 {% block main %} 
-    <h1>List of clients.</h1>
+    <h1>List of Suppliers</h1>
     <div class="section">
-        <h2>All clients.</h2>
+        <h2>All suppliers.</h2>
         <table class="center">
             <thead>
                 <tr>
@@ -17,11 +17,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for client in clients %} 
+                {% for supplier in suppliers %} 
                     <tr>
-                        <td>{{ client.name }}</td>
-                        <td>{{ client.address }}</td>
-                        <td>{{ client.email }}</td>
+                        <td>{{ supplier.name }}</td>
+                        <td>{{ supplier.address }}</td>
+                        <td>{{ supplier.email }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

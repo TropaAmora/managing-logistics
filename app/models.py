@@ -27,7 +27,9 @@ class User(UserMixin, Base):
     
     sales: Mapped[List["Sale"]] = relationship(backref="user")
     clients: Mapped[List["Client"]] = relationship(backref="user")
+    suppliers: Mapped[List["Supplier"]] = relationship(backref="user")
     products: Mapped[List["Product"]] = relationship(backref="user")
+    purchases: Mapped[List["Purchase"]] = relationship(backref="user")
 
     # initializes 
     def __init__(self, username, password_hash, fullname="", email=''):
@@ -64,6 +66,31 @@ class Client(Base):
 
     def __repr__(self) -> str:
         return f'<Client {self.name}>'
+    
+class Supplier(Base):
+    """ Supplier class """
+    __tablename__ = 'supplier'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    address: Mapped[str] = mapped_column(String(100))
+    email: Mapped[str] = mapped_column(String(100))
+    description: Mapped[Optional[str]] = mapped_column(String(128))
+    #created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    purchases: Mapped[List["Purchase"]] = relationship(backref="supplier")
+
+    def __init__(self, name, address, email, description, user_id):
+        self.name = name
+        self.address = address
+        self.email = email
+        self.description = description
+        self.user_id = user_id
+
+    def __repr__(self) -> str:
+        return f'<Supplier {self.name}>'
 
 
 class Product(Base):
@@ -75,9 +102,11 @@ class Product(Base):
     # add a ptype_id to connect with the ptype table
     stock: Mapped[int] = mapped_column(Integer)
 
+
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    salebatches: Mapped[List["SaleBatch"]] = relationship(backref="product")    
+    salebatches: Mapped[List["SaleBatch"]] = relationship(backref="product")
+    purchasebatches: Mapped[List["PurchaseBatch"]] = relationship(backref="product")    
 
     def __init__(self, ref, name, stock, user_id):
         self.ref = ref
@@ -128,6 +157,45 @@ class SaleBatch(Base):
     def __repr__(self):
         return f'<Sale batch {self.id}>'
 
+class Purchase(Base):
+    """ Purchase class """
+    __tablename__ = 'purchase'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    #timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    supplier_id: Mapped[int] = mapped_column(ForeignKey("supplier.id"))
+
+    purchasebatches: Mapped[List["PurchaseBatch"]] = relationship(backref="purchase")
+
+    # Create the init method to ensure that this fields are filled and a row may be created
+    def __init__(self, user_id, supplier_id):
+        self.user_id = user_id
+        self.supplier_id = supplier_id
+
+    def __repr__(self):
+        return f'<Purchase {self.id}>'
+    
+class PurchaseBatch(Base):
+    """  batch class """
+    __tablename__ = 'purchasebatch'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    quantity: Mapped[int] = mapped_column(Integer)
+    purchaseprice: Mapped[float] = mapped_column(Float)
+    
+    purchase_id: Mapped[int] = mapped_column(ForeignKey("purchase.id"))
+    product_ref: Mapped[int] = mapped_column(ForeignKey("product.ref"))
+
+    def __init__(self, quantity, purchaseprice, purchase_id, product_ref):
+        self.quantity = quantity
+        self.purchaseprice = purchaseprice
+        self.purchase_id = purchase_id
+        self.product_ref = product_ref
+
+    def __repr__(self):
+        return f'<Purchase batch {self.id}>'
 
 # Engine creation first and the creation of all the tabels that result from this models
 engine = create_engine("sqlite:///app.db", echo=True)

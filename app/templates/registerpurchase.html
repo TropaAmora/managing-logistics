@@ -1,0 +1,35 @@
+{% extends "layout.html" %} 
+
+{% block title %} 
+    Purchase registration.
+{% endblock %}
+
+{% block main %} 
+    <h1>Add stock</h1>
+    <table class="center">
+        <form action="" method="post">
+            <div class="mb-3">
+                {{ form.hidden_tag() }}
+                {{ form.supplier.label }}<br>
+                {{ form.supplier }}
+            </div>
+            <div class="mb-3">
+                {% for error in form.supplier.errors %} 
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('addpurchasebatch') }}">Add product</a></li>
+            {% for i in range(X) %}
+                <div class="mb-3">
+                    {% for entry in form.purchase_batches %}
+                        {{ entry.product_ref.label }}{{ entry.product_ref }}<br>
+                        {{ entry.quantity.label }}{{ entry.quantity }}<br>
+                        {{ entry.purchaseprice.label }}{{ entry.purchaseprice }}<br>
+                    {% endfor %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('removepurchasebatch') }}">Remove product</a></li>
+                </div>
+            {% endfor %}
+            <button>Submit</button>
+        </form>
+    </table>
+{% endblock %}
