@@ -100,7 +100,6 @@ ENV/
 # Project specific
 alembic.ini
 app.db
-alembic/
 
 # Virtual environment
 .venv/
