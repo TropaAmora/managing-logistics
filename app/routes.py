@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, abort
+from flask import render_template, request, redirect, url_for, flash, abort, session
 from flask_login import login_required, current_user, login_user, logout_user
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -180,60 +180,45 @@ def registerpurchase():
     else:
         return render_template('registerpurchase.html', form=form, X=X)
 
-    
+
 @app.route("/registersale", methods=['GET', 'POST'])
 @login_required
 def registersale():
-    global N # means: in this scope, use the global name
+    sale_batches_count = session.get('sale_batches_count', 1)
     id_user = int(current_user.get_id())
     clients_list = get_list_id(Client, id_user)
+    
     form = SaleRegistrationForm()
     form.client.choices = clients_list
-    if request.method == 'POST':
-        # register sale here
-        new_sale = Sale(user_id=id_user, 
-                        client_id=form.client.data
-                        )
+
+    # Adjust the number of entries based on session
+    while len(form.sale_batches) < sale_batches_count:
+        form.sale_batches.append_entry()
+    while len(form.sale_batches) > sale_batches_count:
+        form.sale_batches.pop_entry()
+
+    if form.validate_on_submit():
+        new_sale = Sale(user_id=id_user, client_id=form.client.data)
         session.add(new_sale)
         session.commit()
-        id_sale = session.query(Sale.id).filter(Sale.user_id == id_user).order_by(Sale.id.desc()).first()
-        # using temporary lists to store the values for each sale batch
-        sb = {
-            'sale_batches-0-product_ref':[], 
-            'sale_batches-0-quantity':[], 
-            'sale_batches-0-saleprice':[]
-            }
-        for keys in request.form.keys():
-            i = 0
-            if keys == 'sale_batches-0-product_ref':
-                for value in request.form.getlist(keys):
-                    sb['sale_batches-0-product_ref'].append(value)
-                    i += 1
-            i = 0
-            if keys == 'sale_batches-0-quantity':
-                for value in request.form.getlist(keys):
-                    sb['sale_batches-0-quantity'].append(value)
-                    i += 1
-            i = 0
-            if keys == 'sale_batches-0-saleprice':
-                for value in request.form.getlist(keys):
-                    sb['sale_batches-0-saleprice'].append(value)
-                    i += 1
-        for index in range(N):
-            new_salebatch = SaleBatch(product_ref=int(sb['sale_batches-0-product_ref'][index]),
-                                      quantity=int(sb['sale_batches-0-quantity'][index]), 
-                                      saleprice=float(sb['sale_batches-0-saleprice'][index]), 
-                                      sale_id=(id_sale[0]), 
-                                      )
-            product = session.query(Product).filter(Product.ref == new_salebatch.product_ref).first()
+        
+        for batch in form.sale_batches:
+            new_salebatch = SaleBatch(
+                product_ref=batch.product_ref.data,
+                quantity=batch.quantity.data,
+                saleprice=batch.saleprice.data,
+                sale_id=new_sale.id
+            )
+            product = session.query(Product).filter(Product.ref == batch.product_ref.data).first()
             product.stock -= new_salebatch.quantity
             session.add(new_salebatch)
             session.commit()
+        
         flash('Congratulations, you registered a sale.')
-        N = 1
+        session['sale_batches_count'] = 1
         return redirect(url_for('index'))
-    else:
-        return render_template('registersale.html', form=form, N=N)
+    
+    return render_template('registersale.html', form=form)
 
 
 @app.route("/clients", methods=['GET', 'POST'])
@@ -288,16 +273,18 @@ def purchases():
 @app.route("/addsalebatch", methods=['GET', 'POST'])
 @login_required
 def addsalebatch():
-    global N
-    N += 1
+    sale_batches_count = session.get('sale_batches_count', 1)
+    sale_batches_count += 1
+    session['sale_batches_count'] = sale_batches_count
     return redirect(url_for('registersale'))
 
 @app.route("/removesalebatch", methods=['GET', 'POST'])
 @login_required
 def removesalebatch():
-    global N
-    if N > 1:
-        N -= 1
+    sale_batches_count = session.get('sale_batches_count', 1)
+    if sale_batches_count > 1:
+        sale_batches_count -= 1
+        session['sale_batches_count'] = sale_batches_count
     return redirect(url_for('registersale'))
 
 @app.route("/addpurchasebatch", methods=['GET', 'POST'])
